@@ -1,0 +1,4 @@
+interface:
+  display_name: "Flask Backend"
+  short_description: "Handle backend work with Flask"
+  default_prompt: "Use $flask-backend to implement this backend change with Flask, including routes, services, validation, tests, and operational notes."
