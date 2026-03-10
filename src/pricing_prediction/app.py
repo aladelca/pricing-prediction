@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import atexit
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
@@ -22,9 +23,11 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
 
     db.init_app(app)
 
-    app.extensions["scrape_executor"] = ThreadPoolExecutor(
+    executor = ThreadPoolExecutor(
         max_workers=app.config["SCRAPER_EXECUTOR_WORKERS"]
     )
+    app.extensions["scrape_executor"] = executor
+    atexit.register(executor.shutdown, wait=False)
 
     app.register_blueprint(health_bp)
     app.register_blueprint(api_v1)

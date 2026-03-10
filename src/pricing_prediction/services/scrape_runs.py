@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from typing import Any
 
 from flask import Flask
@@ -18,7 +19,8 @@ class ScrapeRunService:
         self,
         *,
         repository: ScrapeRunRepository,
-        client: FalabellaClient,
+        client: FalabellaClient | None = None,
+        client_factory: Callable[[], FalabellaClient] | None = None,
         default_max_pages: int,
         max_allowed_pages: int,
         request_delay_ms: int,
@@ -26,6 +28,7 @@ class ScrapeRunService:
     ) -> None:
         self.repository = repository
         self.client = client
+        self.client_factory = client_factory
         self.default_max_pages = default_max_pages
         self.max_allowed_pages = max_allowed_pages
         self.request_delay_ms = request_delay_ms
@@ -33,15 +36,15 @@ class ScrapeRunService:
 
     @classmethod
     def from_app(cls, app: Flask) -> ScrapeRunService:
-        client = FalabellaClient(
-            timeout=app.config["SCRAPER_REQUEST_TIMEOUT"],
-            retry_attempts=app.config["SCRAPER_RETRY_ATTEMPTS"],
-            user_agent=app.config["SCRAPER_USER_AGENT"],
-            enable_browser_fallback=app.config["SCRAPER_ENABLE_BROWSER_FALLBACK"],
-        )
         return cls(
             repository=ScrapeRunRepository(),
-            client=client,
+            client=None,
+            client_factory=lambda: FalabellaClient(
+                timeout=app.config["SCRAPER_REQUEST_TIMEOUT"],
+                retry_attempts=app.config["SCRAPER_RETRY_ATTEMPTS"],
+                user_agent=app.config["SCRAPER_USER_AGENT"],
+                enable_browser_fallback=app.config["SCRAPER_ENABLE_BROWSER_FALLBACK"],
+            ),
             default_max_pages=app.config["SCRAPER_DEFAULT_MAX_PAGES"],
             max_allowed_pages=app.config["SCRAPER_MAX_ALLOWED_PAGES"],
             request_delay_ms=app.config["SCRAPER_REQUEST_DELAY_MS"],
@@ -68,6 +71,7 @@ class ScrapeRunService:
 
     def execute_run(self, run_id: str) -> ScrapeRun:
         page_errors: list[str] = []
+        client = self._resolve_client()
         try:
             run = self.repository.get_run(run_id)
             if run.status == "running":
@@ -83,7 +87,7 @@ class ScrapeRunService:
 
             for page_number in range(1, run.requested_pages + 1):
                 try:
-                    fetched_page = self.client.fetch_search_page(run.query, page_number)
+                    fetched_page = client.fetch_search_page(run.query, page_number)
                     parsed_page = parse_search_page(fetched_page.html)
                     items = normalize_search_results(
                         results=parsed_page.results,
@@ -122,7 +126,7 @@ class ScrapeRunService:
             self.repository.commit()
             return run
         finally:
-            self.client.close()
+            client.close()
 
     def get_run(self, run_id: str) -> ScrapeRun:
         return self.repository.get_run(run_id)
@@ -135,3 +139,11 @@ class ScrapeRunService:
             "offset": offset,
             "total": total,
         }
+
+    def _resolve_client(self) -> FalabellaClient:
+        if self.client is not None:
+            return self.client
+        if self.client_factory is None:
+            raise RuntimeError("ScrapeRunService requires a Falabella client to execute runs.")
+        self.client = self.client_factory()
+        return self.client
