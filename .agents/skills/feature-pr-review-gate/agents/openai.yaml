@@ -1,0 +1,7 @@
+interface:
+  display_name: "Feature PR Review Gate"
+  short_description: "Branch, PR y review con veredicto"
+  default_prompt: "Usa $feature-pr-review-gate para implementar cambios en una rama nueva, abrir un PR detallado y publicar un review con veredicto GO o NO-GO."
+
+policy:
+  allow_implicit_invocation: true

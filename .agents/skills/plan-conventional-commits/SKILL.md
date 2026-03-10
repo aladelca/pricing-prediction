@@ -14,7 +14,7 @@ staging and committing.
 Run the bundled analyzer first:
 
 ```bash
-python3 skills/plan-conventional-commits/scripts/plan_commits.py --format json
+python3 .agents/skills/plan-conventional-commits/scripts/plan_commits.py --format json
 ```
 
 Use `--repo /path/to/repo` when the target repository is not the current
