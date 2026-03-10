@@ -1,0 +1,7 @@
+interface:
+  display_name: "Levantar Observaciones PR"
+  short_description: "Resolver feedback de PR con cambios minimos"
+  default_prompt: "Usa $levantar-observaciones-pr para leer todos los comentarios de este PR, analizarlos, implementar el fix menos invasivo posible y dejar respuestas por hilo."
+
+policy:
+  allow_implicit_invocation: true
