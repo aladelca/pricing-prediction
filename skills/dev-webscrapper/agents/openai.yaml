@@ -1,0 +1,7 @@
+interface:
+  display_name: "Dev Web Scrapper"
+  short_description: "Scraping con Selenium y agent-browser"
+  default_prompt: "Usa $dev-webscrapper para inspeccionar un sitio, definir selectores estables y construir un scraper repetible."
+
+policy:
+  allow_implicit_invocation: true
