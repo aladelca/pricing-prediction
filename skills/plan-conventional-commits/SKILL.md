@@ -1,85 +1,111 @@
 ---
 name: plan-conventional-commits
-description: [TODO: Complete and informative explanation of what the skill does and when to use it. Include WHEN to use this skill - specific scenarios, file types, or tasks that trigger it.]
+description: Analyze a git worktree, group changed files by cohesive change intent, and propose an approval-ready Conventional Commits plan before any staging or commit happens. Use when Codex needs to split a dirty worktree into logical commits, infer commit type and scope, review mixed changes, or prepare conventional commit messages for explicit user approval.
 ---
 
 # Plan Conventional Commits
 
-## Overview
+Turn a messy git worktree into a small set of coherent Conventional Commits.
+Always stop after presenting the plan unless the user explicitly approves
+staging and committing.
 
-[TODO: 1-2 sentences explaining what this skill enables]
+## Start with the analyzer
 
-## Structuring This Skill
+Run the bundled analyzer first:
 
-[TODO: Choose the structure that best fits this skill's purpose. Common patterns:
+```bash
+python3 skills/plan-conventional-commits/scripts/plan_commits.py --format json
+```
 
-**1. Workflow-Based** (best for sequential processes)
-- Works well when there are clear step-by-step procedures
-- Example: DOCX skill with "Workflow Decision Tree" -> "Reading" -> "Creating" -> "Editing"
-- Structure: ## Overview -> ## Workflow Decision Tree -> ## Step 1 -> ## Step 2...
+Use `--repo /path/to/repo` when the target repository is not the current
+directory. The script classifies changed files, suggests commit groups, and
+marks low-confidence cases that need manual review.
 
-**2. Task-Based** (best for tool collections)
-- Works well when the skill offers different operations/capabilities
-- Example: PDF skill with "Quick Start" -> "Merge PDFs" -> "Split PDFs" -> "Extract Text"
-- Structure: ## Overview -> ## Quick Start -> ## Task Category 1 -> ## Task Category 2...
+## Build the plan
 
-**3. Reference/Guidelines** (best for standards or specifications)
-- Works well for brand guidelines, coding standards, or requirements
-- Example: Brand styling with "Brand Guidelines" -> "Colors" -> "Typography" -> "Features"
-- Structure: ## Overview -> ## Guidelines -> ## Specifications -> ## Usage...
+- Treat the script output as a starting point, not final truth.
+- Group by change intent, not by extension alone.
+- Keep tests and docs with the code change they validate when they are not
+  meaningful on their own.
+- Split repo-wide tooling, CI, or dependency changes away from product code
+  unless they are required for the same feature.
+- Prefer the fewest commits that still have one clear objective.
+- Reject grouping that would force a vague message such as
+  `chore(repo): update files`.
 
-**4. Capabilities-Based** (best for integrated systems)
-- Works well when the skill provides multiple interrelated features
-- Example: Product Management with "Core Capabilities" -> numbered capability list
-- Structure: ## Overview -> ## Core Capabilities -> ### 1. Feature -> ### 2. Feature...
+Use these commit types:
 
-Patterns can be mixed and matched as needed. Most skills combine patterns (e.g., start with task-based, add workflow for complex operations).
+- `feat`: new user-facing capability or notable workflow addition
+- `fix`: bug correction, compatibility repair, or logic defect
+- `refactor`: internal restructuring without feature intent
+- `perf`: measurable runtime or resource improvement
+- `docs`: documentation-only changes
+- `test`: tests-only changes
+- `build`: dependency, packaging, or build pipeline updates
+- `ci`: CI workflow changes
+- `chore`: repository maintenance that does not fit the above
+- `revert`: rollback of a previous commit
 
-Delete this entire "Structuring This Skill" section when done - it's just guidance.]
+## Choose scope and subject
 
-## [TODO: Replace with the first main section based on chosen structure]
+- Use the product area, package, service, or module as the scope.
+- Avoid scopes such as `json`, `md`, `config`, or `misc`.
+- Write the subject in lowercase imperative form with no trailing period.
+- Keep the subject specific enough that another engineer can predict the diff.
 
-[TODO: Add content here. See examples in existing skills:
-- Code samples for technical skills
-- Decision trees for complex workflows
-- Concrete examples with realistic user requests
-- References to scripts/templates/references as needed]
+Good patterns:
 
-## Resources (optional)
+- `feat(auth): add passwordless login`
+- `fix(scraper): handle empty price blocks`
+- `refactor(training): split feature engineering helpers`
+- `build(repo): pin selenium driver`
 
-Create only the resource directories this skill actually needs. Delete this section if no resources are required.
+## Inspect ambiguity before proposing the final plan
 
-### scripts/
-Executable code (Python/Bash/etc.) that can be run directly to perform specific operations.
+Read targeted diffs when any of these happen:
 
-**Examples from other skills:**
-- PDF skill: `fill_fillable_fields.py`, `extract_form_field_info.py` - utilities for PDF manipulation
-- DOCX skill: `document.py`, `utilities.py` - Python modules for document processing
+- the analyzer returns `confidence: low`
+- a group has repo-wide source files
+- a file could plausibly belong to more than one commit
+- a rename or delete changes the apparent scope
+- merge conflicts are present
 
-**Appropriate for:** Python scripts, shell scripts, or any executable code that performs automation, data processing, or specific operations.
+Use focused inspection:
 
-**Note:** Scripts may be executed without loading into context, but can still be read by Codex for patching or environment adjustments.
+```bash
+git diff -- path/to/file
+git diff -- path/one path/two
+git diff --stat
+```
 
-### references/
-Documentation and reference material intended to be loaded into context to inform Codex's process and thinking.
+## Approval output
 
-**Examples from other skills:**
-- Product management: `communication.md`, `context_building.md` - detailed workflow guides
-- BigQuery: API reference documentation and query examples
-- Finance: Schema documentation, company policies
+Return a plan only. Do not stage or commit yet.
 
-**Appropriate for:** In-depth documentation, API references, database schemas, comprehensive guides, or any detailed information that Codex should reference while working.
+Use this shape:
 
-### assets/
-Files not intended to be loaded into context, but rather used within the output Codex produces.
+```markdown
+## Proposed Commit Plan
 
-**Examples from other skills:**
-- Brand styling: PowerPoint template files (.pptx), logo files
-- Frontend builder: HTML/React boilerplate project directories
-- Typography: Font files (.ttf, .woff2)
+1. `type(scope): subject`
+Why: one sentence on the shared objective.
+Files:
+- path/to/file
+- another/file
+Notes: optional risk, dependency, or ambiguity note.
 
-**Appropriate for:** Templates, boilerplate code, document templates, images, icons, fonts, or any files meant to be copied or used in the final output.
+2. `type(scope): subject`
+Why: ...
+Files:
+- ...
 
----
+Waiting for approval before running `git add` or `git commit`.
+```
 
-**Not every skill requires all three types of resources.**
+## After approval
+
+Once the user approves:
+
+1. stage only the files or hunks that belong to the approved commit
+2. create commits in the approved order
+3. report the exact commit messages that were created

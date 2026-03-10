@@ -1,4 +1,4 @@
 interface:
   display_name: "Plan Conventional Commits"
   short_description: "Plan cohesive Conventional Commits"
-  default_prompt: "Use -conventional-commits to inspect this repo and propose an approval-ready Conventional Commit plan."
+  default_prompt: "Use $plan-conventional-commits to inspect this repo and propose an approval-ready Conventional Commit plan."
