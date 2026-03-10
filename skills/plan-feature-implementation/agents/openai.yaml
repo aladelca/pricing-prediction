@@ -1,0 +1,7 @@
+interface:
+  display_name: "Plan Feature Implementation"
+  short_description: "Planes detallados para implementar features"
+  default_prompt: "Usa $plan-feature-implementation para investigar el contexto y crear un plan detallado en /plans antes de implementar este feature."
+
+policy:
+  allow_implicit_invocation: true
