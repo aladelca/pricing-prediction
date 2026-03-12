@@ -69,6 +69,10 @@ Bundle generado:
 
 ## Consumir la API de predicción
 
+Runbook detallado con payloads reales:
+
+- [docs/runbooks/current-price-prediction.md](docs/runbooks/current-price-prediction.md)
+
 ```bash
 curl -X POST http://127.0.0.1:5000/api/v1/predictions/current-price \
   -H 'Content-Type: application/json' \
