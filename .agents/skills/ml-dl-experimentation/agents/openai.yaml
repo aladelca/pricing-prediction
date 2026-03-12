@@ -1,0 +1,4 @@
+interface:
+  display_name: "ML/DL Experimentation"
+  short_description: "Run notebook-first CatBoost and PyTorch experiments"
+  default_prompt: "Use $ml-dl-experimentation to create notebooks in notebook/, run CatBoost-first boosting and PyTorch MPS experiments with strong feature engineering, validate with 5 folds, report the chosen metrics on every run, and identify the winner model."
