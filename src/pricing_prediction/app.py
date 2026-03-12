@@ -23,9 +23,7 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
 
     db.init_app(app)
 
-    executor = ThreadPoolExecutor(
-        max_workers=app.config["SCRAPER_EXECUTOR_WORKERS"]
-    )
+    executor = ThreadPoolExecutor(max_workers=app.config["SCRAPER_EXECUTOR_WORKERS"])
     app.extensions["scrape_executor"] = executor
     atexit.register(executor.shutdown, wait=False)
 

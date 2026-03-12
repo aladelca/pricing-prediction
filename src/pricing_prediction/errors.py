@@ -16,3 +16,8 @@ class NotFoundError(ApiError):
 class DomainValidationError(ApiError):
     def __init__(self, message: str) -> None:
         super().__init__(message, 422)
+
+
+class ServiceUnavailableError(ApiError):
+    def __init__(self, message: str) -> None:
+        super().__init__(message, 503)

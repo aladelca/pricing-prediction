@@ -7,11 +7,15 @@ requires-python = ">=3.11"
 dependencies = [
   "alembic>=1.14,<2",
   "beautifulsoup4>=4.12,<5",
+  "catboost>=1.2,<2",
   "flask>=3.1,<4",
   "flask-sqlalchemy>=3.1,<4",
   "httpx>=0.28,<0.29",
+  "numpy>=2.2,<3",
+  "pandas>=2.2,<3",
   "psycopg[binary]>=3.2,<4",
   "pydantic>=2.10,<3",
+  "scikit-learn>=1.6,<2",
   "selenium>=4.29,<5",
   "sqlalchemy>=2.0,<3",
   "tenacity>=9.0,<10",
@@ -62,3 +66,24 @@ module = [
   "pricing_prediction.scraper.falabella.browser_fallback",
 ]
 ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+  "catboost",
+  "catboost.*",
+  "pandas",
+  "pandas.*",
+  "sklearn",
+  "sklearn.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+  "pricing_prediction.ml.current_price.artifacts",
+  "pricing_prediction.ml.current_price.data",
+  "pricing_prediction.ml.current_price.features",
+  "pricing_prediction.ml.current_price.training",
+  "pricing_prediction.services.current_price_predictions",
+]
+disable_error_code = ["import-untyped"]

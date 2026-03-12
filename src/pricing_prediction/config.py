@@ -21,12 +21,16 @@ def _normalize_database_url(value: str) -> str:
 class Config:
     BASE_DIR = Path(__file__).resolve().parents[2]
     DEFAULT_SQLITE_PATH = BASE_DIR / "instance" / "pricing_prediction.db"
+    DEFAULT_CURRENT_PRICE_MODEL_DIR = BASE_DIR / "instance" / "models" / "current_price" / "dev"
 
     TESTING = False
     SQLALCHEMY_DATABASE_URI = _normalize_database_url(
         os.getenv("DATABASE_URL", f"sqlite:///{DEFAULT_SQLITE_PATH}")
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    CURRENT_PRICE_MODEL_DIR = Path(
+        os.getenv("CURRENT_PRICE_MODEL_DIR", str(DEFAULT_CURRENT_PRICE_MODEL_DIR))
+    )
 
     SCRAPER_SOURCE = "falabella_pe"
     SCRAPER_DEFAULT_MAX_PAGES = int(os.getenv("SCRAPER_DEFAULT_MAX_PAGES", "30"))
@@ -49,3 +53,4 @@ class Config:
 
 def ensure_runtime_directories() -> None:
     Config.DEFAULT_SQLITE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    Config.DEFAULT_CURRENT_PRICE_MODEL_DIR.parent.mkdir(parents=True, exist_ok=True)
