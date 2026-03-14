@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Pricing Prediction{% endblock %}</title>
+    <meta
+      name="description"
+      content="Estimate current product prices from the existing pricing-prediction model."
+    >
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <script src="{{ url_for('static', filename='js/predict-form.js') }}" defer></script>
+  </head>
+  <body class="page-{{ active_page }}">
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brandmark" href="{{ url_for('web.home') }}">
+          <span class="brandmark-kicker">pricing prediction</span>
+          <span class="brandmark-title">Current price estimation</span>
+        </a>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a
+            href="{{ url_for('web.home') }}"
+            class="{{ 'is-active' if active_page == 'home' else '' }}"
+          >
+            Home
+          </a>
+          <a
+            href="{{ url_for('web.predict') }}"
+            class="{{ 'is-active' if active_page == 'predict' else '' }}"
+          >
+            Predict
+          </a>
+          <a href="/health">Health</a>
+        </nav>
+      </header>
+
+      <main class="main-content">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </body>
+</html>

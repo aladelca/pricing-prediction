@@ -1,0 +1,45 @@
+<div class="result-card">
+  <p class="eyebrow">Prediction result</p>
+  <h2 class="price-output">S/{{ "%.2f"|format(result.predicted_current_price) }}</h2>
+
+  <dl class="result-metadata">
+    <div>
+      <dt>Model</dt>
+      <dd>{{ result.model_name }}</dd>
+    </div>
+    <div>
+      <dt>Version</dt>
+      <dd>{{ result.model_version }}</dd>
+    </div>
+    <div>
+      <dt>Target</dt>
+      <dd>{{ result.target }}</dd>
+    </div>
+    <div>
+      <dt>Features</dt>
+      <dd>{{ result.features_version }}</dd>
+    </div>
+  </dl>
+
+  {% if result.warnings %}
+    <section class="result-section">
+      <h3>Warnings</h3>
+      <ul class="warning-list">
+        {% for warning in result.warnings %}
+          <li>{{ warning }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  {% if image_urls %}
+    <section class="result-section">
+      <h3>Image inputs</h3>
+      <div class="chip-row">
+        {% for image_url in image_urls %}
+          <span class="chip">{{ image_url }}</span>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+</div>
