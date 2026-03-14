@@ -21,6 +21,19 @@ def test_predict_page_renders_form(client) -> None:
     assert "Generate a current price estimate" in html
     assert 'name="query"' in html
     assert 'name="image_files"' in html
+    assert 'href="/predict/help"' in html
+
+
+def test_field_guide_page_renders_dictionary_entries(client) -> None:
+    response = client.get("/predict/help")
+
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert "Prediction field guide" in html
+    assert "Search by field name, API key, definition, or example" in html
+    assert "Search query" in html
+    assert "availability.internationalShipping" in html
+    assert "Image URLs" in html
 
 
 def test_predict_page_returns_prediction(app, client, current_price_model_dir: Path) -> None:

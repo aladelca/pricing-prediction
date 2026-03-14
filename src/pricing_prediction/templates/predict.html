@@ -8,10 +8,15 @@
       <p class="eyebrow">Prediction form</p>
       <h1>Generate a current price estimate</h1>
     </div>
-    <p class="page-intro-copy">
-      Fill the required listing fields, optionally enrich the request with seller and category
-      metadata, then attach image URLs or local image files as supplemental context.
-    </p>
+    <div class="page-intro-stack">
+      <p class="page-intro-copy">
+        Fill the required listing fields, optionally enrich the request with seller and category
+        metadata, then attach image URLs or local image files as supplemental context.
+      </p>
+      <a class="inline-link" href="{{ url_for('web.prediction_field_guide') }}">
+        Need help with the fields? Open the data dictionary.
+      </a>
+    </div>
   </section>
 
   <div class="prediction-layout">

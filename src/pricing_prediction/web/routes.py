@@ -6,6 +6,7 @@ from flask import Blueprint, current_app, render_template, request
 
 from pricing_prediction.errors import ServiceUnavailableError
 from pricing_prediction.services.current_price_predictions import CurrentPricePredictionService
+from pricing_prediction.web.field_glossary import PREDICTION_FIELD_GLOSSARY
 from pricing_prediction.web.forms import (
     PredictionFormSubmission,
     PredictionFormValidationError,
@@ -19,6 +20,26 @@ web_bp = Blueprint("web", __name__)
 @web_bp.get("/")
 def home() -> tuple[str, int]:
     return render_template("home.html", active_page="home"), 200
+
+
+@web_bp.get("/predict/help")
+def prediction_field_guide() -> tuple[str, int]:
+    glossary_entries = list(PREDICTION_FIELD_GLOSSARY)
+    grouped_entries: dict[str, list[Any]] = {}
+    for entry in glossary_entries:
+        grouped_entries.setdefault(entry.group, []).append(entry)
+
+    return (
+        render_template(
+            "predict_help.html",
+            active_page="glossary",
+            glossary_entries=glossary_entries,
+            glossary_groups=grouped_entries,
+            required_count=sum(1 for entry in glossary_entries if entry.required),
+            optional_count=sum(1 for entry in glossary_entries if not entry.required),
+        ),
+        200,
+    )
 
 
 @web_bp.route("/predict", methods=["GET", "POST"])

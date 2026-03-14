@@ -31,6 +31,12 @@
           >
             Predict
           </a>
+          <a
+            href="{{ url_for('web.prediction_field_guide') }}"
+            class="{{ 'is-active' if active_page == 'glossary' else '' }}"
+          >
+            Field guide
+          </a>
           <a href="/health">Health</a>
         </nav>
       </header>

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Field Guide | Pricing Prediction{% endblock %}
+
+{% block content %}
+  <section class="page-intro">
+    <div>
+      <p class="eyebrow">Prediction field guide</p>
+      <h1>Understand every field before you fill the prediction form.</h1>
+    </div>
+    <div class="page-intro-stack">
+      <p class="page-intro-copy">
+        Use this page as a data dictionary for the prediction workflow. Each entry explains what
+        the field means, whether it is required, and what a realistic example looks like.
+      </p>
+      <a class="inline-link" href="{{ url_for('web.predict') }}">
+        Go back to the prediction form.
+      </a>
+    </div>
+  </section>
+
+  <section class="guide-summary-grid">
+    <article class="summary-card">
+      <p class="eyebrow">Coverage</p>
+      <h2>{{ glossary_entries|length }} fields documented</h2>
+      <p>Every form input in the prediction page has a matching glossary entry here.</p>
+    </article>
+    <article class="summary-card">
+      <p class="eyebrow">Required</p>
+      <h2>{{ required_count }} critical inputs</h2>
+      <p>These are the minimum fields you should provide to submit a valid prediction request.</p>
+    </article>
+    <article class="summary-card">
+      <p class="eyebrow">Optional</p>
+      <h2>{{ optional_count }} enrichment fields</h2>
+      <p>These help the model when available, but the form can still work without many of them.</p>
+    </article>
+  </section>
+
+  <section class="guide-toolbar">
+    <label class="guide-search" for="field-guide-search">
+      <span>Search by field name, API key, definition, or example</span>
+      <input
+        id="field-guide-search"
+        type="search"
+        placeholder="Try: rating, seller_id, image URLs, category"
+      >
+    </label>
+    <p class="guide-search-result">
+      <span id="field-guide-result-count">{{ glossary_entries|length }}</span> entries visible
+    </p>
+  </section>
+
+  <section class="guide-groups">
+    {% for group_name, entries in glossary_groups.items() %}
+      <div class="guide-group" data-field-guide-section>
+        <div class="guide-group-header">
+          <p class="eyebrow">{{ group_name }}</p>
+          <h2>{{ group_name }}</h2>
+        </div>
+        <div class="dictionary-grid">
+          {% for entry in entries %}
+            <article
+              id="field-{{ entry.anchor_id }}"
+              class="dictionary-card"
+              data-field-guide-card
+              data-search-text="{{ entry.search_text }}"
+            >
+              <div class="dictionary-card-header">
+                <div>
+                  <p class="dictionary-card-label">{{ entry.label }}</p>
+                  <code class="dictionary-code">{{ entry.form_name }}</code>
+                </div>
+                <div class="badge-row">
+                  <span class="badge {{ 'badge-required' if entry.required else 'badge-optional' }}">
+                    {{ "Required" if entry.required else "Optional" }}
+                  </span>
+                  <span class="badge badge-code">{{ entry.api_field }}</span>
+                </div>
+              </div>
+
+              <p class="dictionary-definition">{{ entry.definition }}</p>
+
+              <dl class="dictionary-meta">
+                <div>
+                  <dt>Form field</dt>
+                  <dd><code>{{ entry.form_name }}</code></dd>
+                </div>
+                <div>
+                  <dt>API field</dt>
+                  <dd><code>{{ entry.api_field }}</code></dd>
+                </div>
+                <div>
+                  <dt>Example</dt>
+                  <dd><pre>{{ entry.example }}</pre></dd>
+                </div>
+              </dl>
+
+              {% if entry.notes %}
+                <ul class="dictionary-notes">
+                  {% for note in entry.notes %}
+                    <li>{{ note }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </section>
+
+  <div id="field-guide-empty" class="empty-state" hidden>
+    <p class="eyebrow">No matches</p>
+    <h2>No glossary entries match your search.</h2>
+    <p>Try a simpler term like <code>query</code>, <code>rating</code>, or <code>image</code>.</p>
+  </div>
+{% endblock %}

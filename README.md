@@ -34,6 +34,7 @@ La misma app Flask ahora sirve una interfaz web server-rendered:
 
 - `GET /` home publico
 - `GET /predict` formulario HTML para prediccion
+- `GET /predict/help` diccionario de datos para entender el formulario
 - `POST /predict` submit del formulario web
 - `GET /health` healthcheck JSON
 - `POST /api/v1/predictions/current-price` API JSON para integraciones
@@ -128,6 +129,13 @@ La vista `/predict` acepta:
 - metadata estructurada del listing
 - URLs de imagen pegadas manualmente
 - archivos locales `.jpg`, `.jpeg`, `.png` y `.webp`
+
+La vista `/predict/help` funciona como diccionario de datos:
+
+- explica que significa cada campo
+- aclara si es obligatorio u opcional
+- muestra el nombre del campo en el formulario y en el payload API
+- incluye ejemplos concretos para ayudar a llenar la prediccion
 
 Limitacion importante:
 
