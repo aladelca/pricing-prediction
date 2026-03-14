@@ -28,6 +28,18 @@ uv run alembic upgrade head
 uv run flask --app pricing_prediction.app:create_app run --debug
 ```
 
+## Ejecutar la app web
+
+La misma app Flask ahora sirve una interfaz web server-rendered:
+
+- `GET /` home publico
+- `GET /predict` formulario HTML para prediccion
+- `POST /predict` submit del formulario web
+- `GET /health` healthcheck JSON
+- `POST /api/v1/predictions/current-price` API JSON para integraciones
+
+La recomendacion para esta base es mantener Flask + Jinja para la v1. Ya existe la logica de inferencia y el formulario web puede reutilizar directamente `PredictCurrentPriceRequest` y `CurrentPricePredictionService` sin introducir un frontend separado.
+
 Endpoints principales:
 
 - `GET /health`
@@ -106,6 +118,29 @@ Respuesta esperada:
   }
 }
 ```
+
+## Usar la UI de prediccion
+
+Levanta la app y abre `http://127.0.0.1:5000/`.
+
+La vista `/predict` acepta:
+
+- metadata estructurada del listing
+- URLs de imagen pegadas manualmente
+- archivos locales `.jpg`, `.jpeg`, `.png` y `.webp`
+
+Limitacion importante:
+
+- el modelo actual no inspecciona pixeles ni hace inferencia visual real
+- `image_urls` solo aportan metadata derivada como conteo y namespace
+- la senal fuerte sigue estando en `query`, `title`, ranking y metadata del listing
+
+Configuracion relevante para la UI:
+
+- `CURRENT_PRICE_MODEL_DIR`
+- `MAX_CONTENT_LENGTH`
+- `WEB_PREDICTION_MAX_IMAGE_FILES`
+- `WEB_PREDICTION_ALLOWED_EXTENSIONS`
 
 ## Persistencia de imagenes
 

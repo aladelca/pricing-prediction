@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Home | Pricing Prediction{% endblock %}
+
+{% block content %}
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Flask web app</p>
+      <h1>Estimate current marketplace prices from the model already deployed in this repo.</h1>
+      <p class="hero-text">
+        This interface sits on top of the existing `current-price` prediction service. It gives
+        you a public home, a browser form, and a cleaner way to test the model without crafting
+        JSON by hand.
+      </p>
+      <div class="hero-actions">
+        <a class="button button-primary" href="{{ url_for('web.predict') }}">Start a prediction</a>
+        <a class="button button-secondary" href="/health">Check service health</a>
+      </div>
+    </div>
+    <aside class="hero-panel">
+      <p class="panel-kicker">What the model uses today</p>
+      <ul class="feature-list">
+        <li>Listing metadata like query, page number, position, brand, seller, rating, and category.</li>
+        <li>Title text transformed with the trained text pipeline.</li>
+        <li>Image URL metadata such as counts and namespaces.</li>
+      </ul>
+      <p class="panel-note">
+        Uploads and manual URLs are accepted in the UI, but the current model does not inspect the
+        image pixels themselves.
+      </p>
+    </aside>
+  </section>
+
+  <section class="card-grid">
+    <article class="info-card">
+      <p class="eyebrow">Workflow</p>
+      <h2>Reuse the existing API contract</h2>
+      <p>
+        The web form maps directly to the same `PredictCurrentPriceRequest` schema used by
+        `POST /api/v1/predictions/current-price`.
+      </p>
+    </article>
+
+    <article class="info-card">
+      <p class="eyebrow">Inputs</p>
+      <h2>Structured data first</h2>
+      <p>
+        Best results still come from a complete listing payload. Images act as supplementary
+        context because the production model is not multimodal yet.
+      </p>
+    </article>
+
+    <article class="info-card">
+      <p class="eyebrow">Operations</p>
+      <h2>Single runtime</h2>
+      <p>
+        Home, prediction form, health checks, and the JSON API all stay in the same Flask app and
+        deployment unit.
+      </p>
+    </article>
+  </section>
+{% endblock %}

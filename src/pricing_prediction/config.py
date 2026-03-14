@@ -18,6 +18,13 @@ def _normalize_database_url(value: str) -> str:
     return value
 
 
+def _split_csv(value: str | None, default: tuple[str, ...]) -> tuple[str, ...]:
+    if value is None:
+        return default
+    items = tuple(part.strip().lower() for part in value.split(",") if part.strip())
+    return items or default
+
+
 class Config:
     BASE_DIR = Path(__file__).resolve().parents[2]
     DEFAULT_SQLITE_PATH = BASE_DIR / "instance" / "pricing_prediction.db"
@@ -30,6 +37,12 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     CURRENT_PRICE_MODEL_DIR = Path(
         os.getenv("CURRENT_PRICE_MODEL_DIR", str(DEFAULT_CURRENT_PRICE_MODEL_DIR))
+    )
+    MAX_CONTENT_LENGTH = int(os.getenv("MAX_CONTENT_LENGTH", str(8 * 1024 * 1024)))
+    WEB_PREDICTION_MAX_IMAGE_FILES = int(os.getenv("WEB_PREDICTION_MAX_IMAGE_FILES", "6"))
+    WEB_PREDICTION_ALLOWED_EXTENSIONS = _split_csv(
+        os.getenv("WEB_PREDICTION_ALLOWED_EXTENSIONS"),
+        ("jpg", "jpeg", "png", "webp"),
     )
 
     SCRAPER_SOURCE = "falabella_pe"

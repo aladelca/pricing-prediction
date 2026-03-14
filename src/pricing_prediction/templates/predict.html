@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Predict | Pricing Prediction{% endblock %}
+
+{% block content %}
+  <section class="page-intro">
+    <div>
+      <p class="eyebrow">Prediction form</p>
+      <h1>Generate a current price estimate</h1>
+    </div>
+    <p class="page-intro-copy">
+      Fill the required listing fields, optionally enrich the request with seller and category
+      metadata, then attach image URLs or local image files as supplemental context.
+    </p>
+  </section>
+
+  <div class="prediction-layout">
+    <section class="form-card">
+      <div class="callout">
+        <strong>Model note.</strong>
+        The current production bundle uses structured metadata and title text. Uploaded files are
+        accepted for workflow convenience, but they do not trigger visual inference.
+      </div>
+
+      {% if service_error %}
+        <div class="alert alert-error">
+          <strong>Prediction service unavailable.</strong>
+          <span>{{ service_error }}</span>
+        </div>
+      {% endif %}
+
+      {% if field_errors.get("form") %}
+        <div class="alert alert-error">
+          <strong>Form validation failed.</strong>
+          <span>{{ field_errors.get("form") }}</span>
+        </div>
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data" class="prediction-form" novalidate>
+        <div class="form-grid">
+          <label class="field">
+            <span>Query</span>
+            <input type="text" name="query" value="{{ form_values.query }}" required>
+            {% if field_errors.get("query") %}<small class="field-error">{{ field_errors.get("query") }}</small>{% endif %}
+          </label>
+
+          <label class="field">
+            <span>Page number</span>
+            <input type="number" min="1" name="page_number" value="{{ form_values.page_number }}" required>
+            {% if field_errors.get("page_number") %}<small class="field-error">{{ field_errors.get("page_number") }}</small>{% endif %}
+          </label>
+
+          <label class="field">
+            <span>Position</span>
+            <input type="number" min="1" name="position" value="{{ form_values.position }}" required>
+            {% if field_errors.get("position") %}<small class="field-error">{{ field_errors.get("position") }}</small>{% endif %}
+          </label>
+
+          <label class="field field-wide">
+            <span>Title</span>
+            <input type="text" name="title" value="{{ form_values.title }}" required>
+            {% if field_errors.get("title") %}<small class="field-error">{{ field_errors.get("title") }}</small>{% endif %}
+          </label>
+
+          <label class="field">
+            <span>Brand</span>
+            <input type="text" name="brand" value="{{ form_values.brand }}">
+            {% if field_errors.get("brand") %}<small class="field-error">{{ field_errors.get("brand") }}</small>{% endif %}
+          </label>
+
+          <label class="field">
+            <span>Seller</span>
+            <input type="text" name="seller" value="{{ form_values.seller }}">
+          </label>
+
+          <label class="field">
+            <span>Seller ID</span>
+            <input type="text" name="seller_id" value="{{ form_values.seller_id }}">
+          </label>
+
+          <label class="field">
+            <span>Source domain</span>
+            <input type="text" name="source_domain" value="{{ form_values.source_domain }}">
+          </label>
+
+          <label class="field">
+            <span>Rating</span>
+            <input type="number" name="rating" min="0" max="5" step="0.1" value="{{ form_values.rating }}">
+            {% if field_errors.get("rating") %}<small class="field-error">{{ field_errors.get("rating") }}</small>{% endif %}
+          </label>
+
+          <label class="field">
+            <span>Review count</span>
+            <input type="number" name="review_count" min="0" step="1" value="{{ form_values.review_count }}">
+            {% if field_errors.get("review_count") %}<small class="field-error">{{ field_errors.get("review_count") }}</small>{% endif %}
+          </label>
+
+          <label class="field">
+            <span>Category ID</span>
+            <input type="text" name="gsc_category_id" value="{{ form_values.gsc_category_id }}">
+          </label>
+
+          <label class="field">
+            <span>Provider name</span>
+            <input type="text" name="provider_name" value="{{ form_values.provider_name }}">
+          </label>
+
+          <label class="field">
+            <span>Multipurpose badges count</span>
+            <input
+              type="number"
+              name="multipurpose_badges_count"
+              min="0"
+              step="1"
+              value="{{ form_values.multipurpose_badges_count }}"
+            >
+            {% if field_errors.get("multipurpose_badges_count") %}<small class="field-error">{{ field_errors.get("multipurpose_badges_count") }}</small>{% endif %}
+          </label>
+
+          <div class="field field-wide field-checkbox-group">
+            <span>Flags</span>
+            <label class="checkbox">
+              <input type="checkbox" name="sponsored" {% if form_values.sponsored %}checked{% endif %}>
+              <span>Sponsored</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" name="is_best_seller" {% if form_values.is_best_seller %}checked{% endif %}>
+              <span>Best seller</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" name="is_frequent_product" {% if form_values.is_frequent_product %}checked{% endif %}>
+              <span>Frequent product</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" name="international_shipping" {% if form_values.international_shipping %}checked{% endif %}>
+              <span>International shipping</span>
+            </label>
+          </div>
+
+          <label class="field field-wide">
+            <span>Image URLs</span>
+            <textarea
+              id="image-urls-text"
+              name="image_urls_text"
+              rows="5"
+              placeholder="One URL per line"
+            >{{ form_values.image_urls_text }}</textarea>
+            <small class="field-help">
+              <span id="image-url-count">{{ image_urls|length }}</span> image references ready.
+            </small>
+          </label>
+
+          <label class="field field-wide">
+            <span>Upload local images</span>
+            <input
+              id="image-files"
+              type="file"
+              name="image_files"
+              accept=".jpg,.jpeg,.png,.webp"
+              multiple
+            >
+            <small class="field-help">
+              <span id="image-file-count">{{ upload_filenames|length }}</span> local images selected.
+            </small>
+            {% if field_errors.get("image_files") %}<small class="field-error">{{ field_errors.get("image_files") }}</small>{% endif %}
+          </label>
+        </div>
+
+        <div id="selected-files" class="selected-files">
+          {% for filename in upload_filenames %}
+            <span class="selected-file">{{ filename }}</span>
+          {% endfor %}
+        </div>
+
+        <div id="upload-preview-grid" class="upload-preview-grid"></div>
+
+        <div class="form-actions">
+          <button type="submit" class="button button-primary">Run prediction</button>
+          <a href="{{ url_for('web.home') }}" class="button button-secondary">Back home</a>
+        </div>
+      </form>
+    </section>
+
+    <aside class="result-panel">
+      {% if result %}
+        {% include "partials/prediction_result.html" %}
+      {% else %}
+        <div class="empty-state">
+          <p class="eyebrow">Awaiting request</p>
+          <h2>No prediction yet</h2>
+          <p>
+            Submit the form to see the estimated current price, model metadata, and any warnings
+            emitted by the inference service.
+          </p>
+        </div>
+      {% endif %}
+    </aside>
+  </div>
+{% endblock %}
