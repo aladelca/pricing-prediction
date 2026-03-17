@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from pathlib import Path
 
 import pytest
 
+from pricing_prediction.app import create_app
 from pricing_prediction.clients.falabella_client import FetchedSearchPage
 from pricing_prediction.db.repositories import ScrapeRunRepository
 from pricing_prediction.services.scrape_runs import ScrapeRunService
@@ -72,6 +74,23 @@ def test_create_scrape_run_endpoint_enforces_page_limit(client, stub_service_fac
 
     assert response.status_code == 422
     assert "cannot exceed 30" in response.get_json()["error"]["message"]
+
+
+def test_scrape_routes_are_disabled_in_inference_mode(tmp_path: Path) -> None:
+    app = create_app(
+        {
+            "TESTING": True,
+            "APP_RUNTIME_MODE": "inference",
+            "SQLALCHEMY_DATABASE_URI": f"sqlite:///{tmp_path / 'inference.db'}",
+        }
+    )
+
+    response = app.test_client().post(
+        "/api/v1/scrape-runs",
+        json={"query": "ropa mujer", "max_pages": 2, "source": "falabella_pe"},
+    )
+
+    assert response.status_code == 404
 
 
 def test_list_scrape_run_items_endpoint_returns_snapshots(client, stub_service_factory) -> None:

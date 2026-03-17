@@ -3,6 +3,8 @@ from __future__ import annotations
 from io import BytesIO
 from pathlib import Path
 
+from pricing_prediction.app import create_app
+
 
 def test_home_page_renders_html(client) -> None:
     response = client.get("/")
@@ -21,6 +23,21 @@ def test_predict_page_renders_form(client) -> None:
     assert "Generate a current price estimate" in html
     assert 'name="query"' in html
     assert 'name="image_files"' in html
+
+
+def test_predict_page_renders_in_inference_mode(tmp_path: Path) -> None:
+    app = create_app(
+        {
+            "TESTING": True,
+            "APP_RUNTIME_MODE": "inference",
+            "SQLALCHEMY_DATABASE_URI": f"sqlite:///{tmp_path / 'inference.db'}",
+        }
+    )
+
+    response = app.test_client().get("/predict")
+
+    assert response.status_code == 200
+    assert "scrape_executor" not in app.extensions
 
 
 def test_predict_page_returns_prediction(app, client, current_price_model_dir: Path) -> None:

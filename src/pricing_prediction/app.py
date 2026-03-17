@@ -7,30 +7,33 @@ from typing import Any
 from flask import Flask
 from pydantic import ValidationError
 
-from pricing_prediction.api import api_v1
+from pricing_prediction.api import create_api_v1
 from pricing_prediction.api.health import health_bp
-from pricing_prediction.config import Config, ensure_runtime_directories
+from pricing_prediction.config import Config, ensure_runtime_directories, load_runtime_config
 from pricing_prediction.errors import ApiError
 from pricing_prediction.extensions import db
 from pricing_prediction.web import web_bp
 
 
 def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
-    ensure_runtime_directories()
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(Config)
+    app.config.from_mapping(load_runtime_config())
     if config_overrides:
         app.config.from_mapping(config_overrides)
 
+    ensure_runtime_directories(app.config)
     db.init_app(app)
 
-    executor = ThreadPoolExecutor(max_workers=app.config["SCRAPER_EXECUTOR_WORKERS"])
-    app.extensions["scrape_executor"] = executor
-    atexit.register(executor.shutdown, wait=False)
+    include_scrape_routes = app.config["APP_RUNTIME_MODE"] != "inference"
+    if include_scrape_routes:
+        executor = ThreadPoolExecutor(max_workers=app.config["SCRAPER_EXECUTOR_WORKERS"])
+        app.extensions["scrape_executor"] = executor
+        atexit.register(executor.shutdown, wait=False)
 
     app.register_blueprint(web_bp)
     app.register_blueprint(health_bp)
-    app.register_blueprint(api_v1)
+    app.register_blueprint(create_api_v1(include_scrape_routes=include_scrape_routes))
     register_error_handlers(app)
     return app
 

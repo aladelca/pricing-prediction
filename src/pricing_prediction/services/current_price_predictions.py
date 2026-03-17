@@ -16,6 +16,7 @@ from pricing_prediction.ml.current_price.features import (
     build_inference_source_frame,
     transform_title_text,
 )
+from pricing_prediction.ml.current_price.model_store import CurrentPriceModelStore
 from pricing_prediction.schemas.prediction import (
     PredictCurrentPriceRequest,
     PredictCurrentPriceResponse,
@@ -29,14 +30,16 @@ class CurrentPricePredictionService:
 
     @classmethod
     def from_app(cls, app: Flask) -> CurrentPricePredictionService:
-        model_dir = Path(app.config["CURRENT_PRICE_MODEL_DIR"])
-        existing = app.extensions.get("current_price_prediction_service")
-        if isinstance(existing, CurrentPricePredictionService) and existing.model_dir == model_dir:
-            return existing
-
         try:
+            model_dir = CurrentPriceModelStore.from_app(app).resolve_model_dir()
+            existing = app.extensions.get("current_price_prediction_service")
+            if (
+                isinstance(existing, CurrentPricePredictionService)
+                and existing.model_dir == model_dir
+            ):
+                return existing
             bundle = load_current_price_artifacts(model_dir)
-        except FileNotFoundError as exc:
+        except (FileNotFoundError, ValueError) as exc:
             raise ServiceUnavailableError(str(exc)) from exc
 
         service = cls(model_dir=model_dir, bundle=bundle)

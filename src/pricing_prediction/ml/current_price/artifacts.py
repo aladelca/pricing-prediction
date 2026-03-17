@@ -10,6 +10,14 @@ from catboost import CatBoostRegressor
 from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+REQUIRED_CURRENT_PRICE_ARTIFACT_FILENAMES = (
+    "model.cbm",
+    "title_vectorizer.pkl",
+    "title_svd.pkl",
+    "metadata.json",
+    "feature_contract.json",
+)
+
 
 @dataclass(frozen=True)
 class CurrentPriceArtifactMetadata:
@@ -93,13 +101,9 @@ def save_current_price_artifacts(
     )
 
 
-def load_current_price_artifacts(model_dir: Path) -> CurrentPriceArtifactBundle:
+def validate_current_price_artifact_dir(model_dir: Path) -> None:
     required_paths = [
-        model_dir / "model.cbm",
-        model_dir / "title_vectorizer.pkl",
-        model_dir / "title_svd.pkl",
-        model_dir / "metadata.json",
-        model_dir / "feature_contract.json",
+        model_dir / filename for filename in REQUIRED_CURRENT_PRICE_ARTIFACT_FILENAMES
     ]
     missing = [path.name for path in required_paths if not path.exists()]
     if missing:
@@ -107,6 +111,10 @@ def load_current_price_artifacts(model_dir: Path) -> CurrentPriceArtifactBundle:
             "Current price model artifact bundle is incomplete in "
             f"'{model_dir}': {', '.join(missing)}"
         )
+
+
+def load_current_price_artifacts(model_dir: Path) -> CurrentPriceArtifactBundle:
+    validate_current_price_artifact_dir(model_dir)
 
     model = CatBoostRegressor()
     model.load_model(str(model_dir / "model.cbm"))

@@ -1,0 +1,16 @@
+.git
+.gitignore
+.mypy_cache
+.pytest_cache
+.ruff_cache
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+instance
+notebook
+tests
+plans
+infra

@@ -7,6 +7,8 @@ from pathlib import Path
 
 from pricing_prediction.app import create_app
 from pricing_prediction.extensions import db
+from pricing_prediction.ml.current_price.artifacts import load_current_price_artifacts
+from pricing_prediction.ml.current_price.model_store import CurrentPriceModelStore
 from pricing_prediction.ml.current_price.training import (
     CurrentPriceTrainingConfig,
     train_current_price_model,
@@ -49,6 +51,11 @@ def build_parser() -> argparse.ArgumentParser:
     train_model.add_argument("--title-max-features", type=int, default=4000)
     train_model.add_argument("--title-min-df", type=int, default=3)
     train_model.add_argument("--title-n-components", type=int, default=48)
+
+    subparsers.add_parser(
+        "sync-current-price-model",
+        help="Resolve the active current_price model and warm the local cache.",
+    )
     return parser
 
 
@@ -86,6 +93,22 @@ def main() -> int:
                 ),
             )
             print(json.dumps({"training_summary": asdict(summary)}, indent=2, default=str))
+            return 0
+
+    if args.command == "sync-current-price-model":
+        with app.app_context():
+            model_dir = CurrentPriceModelStore.from_app(app).resolve_model_dir()
+            bundle = load_current_price_artifacts(model_dir)
+            print(
+                json.dumps(
+                    {
+                        "model_dir": str(model_dir),
+                        "model_name": bundle.metadata.model_name,
+                        "model_version": bundle.metadata.model_version,
+                    },
+                    indent=2,
+                )
+            )
             return 0
 
     parser.print_help()
