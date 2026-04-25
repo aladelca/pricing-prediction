@@ -154,3 +154,5 @@ uv run ruff check src tests
 uv run mypy src
 uv run pytest
 ```
+
+Este es un proyecto desarrollado por alumnos como parte de un curso
